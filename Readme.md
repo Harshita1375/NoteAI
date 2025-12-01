@@ -1,37 +1,52 @@
 # 📘 Note AI
-A Document-Based Question Answering (RAG) System built with **FastAPI**, **LangChain**, and a modern **React** frontend.
 
-Note AI allows you to upload multiple documents, extract knowledge, and ask natural language questions.  
-The backend retrieves relevant chunks using vector search and generates accurate answers using LLMs.
+> **A Document-Based Question Answering (RAG) System built with FastAPI, LangChain, and React.**
+
+**Note AI** allows you to upload multiple documents (PDF, DOCX, TXT), extract knowledge, and ask natural language questions about the content. The backend retrieves relevant chunks using vector search and generates accurate answers using Large Language Models (LLMs).
+
+---
+
+## 📸 Screenshots
+
+| Dashboard | Q&A Interface | Chat History |
+|:---:|:---:|:---:|
+| ![Dashboard](Client/src/assets/screenshots/SS1.png) | ![QnA](Client/src/assets/screenshots/SS2.png) | ![History](Client/src/assets/screenshots/SS3.png) |
 
 ---
 
 ## 🚀 Features
 
 ### 🔹 Frontend (React + Vite)
-- Clean UI for uploading PDF, DOCX, or TXT files
-- Real-time chat-style Q&A interface
-- Shows chat history and model responses
-- Loading indicators & error handling
-- Smooth icons using React Icons
-- Environment-based API configuration
+* **Clean UI:** Modern interface for uploading PDF, DOCX, or TXT files.
+* **Interactive Chat:** Real-time chat-style Q&A interface.
+* **History Tracking:** Sidebar displays chat history and previous model responses.
+* **Feedback:** Loading indicators, error handling, and smooth icons (React Icons).
+* **Configurable:** Environment-based API configuration.
 
 ### 🔹 Backend (FastAPI + LangChain)
-- File upload endpoint with document parsing
-- PDF & DOCX text extraction
-- Embedding generation
-- Vector store indexing (FAISS or Chroma)
-- RAG pipeline with retrieval + generation
-- Chat history support for contextual queries
-- Custom model selection (Mistral, Llama, Qwen, etc.)
+* **Document Parsing:** Robust file upload endpoint supporting PDF & DOCX text extraction.
+* **Vector Search:** Embedding generation and indexing using **FAISS** or **Chroma**.
+* **RAG Pipeline:** Retrieval-Augmented Generation for accurate, context-aware answers.
+* **Contextual Memory:** Chat history support for follow-up queries.
+* **Model Flexibility:** Support for custom models (Mistral, Llama, Qwen, Zephyr).
+
+---
+
+## 🤖 Supported Models
+
+Note AI leverages Hugging Face models for embeddings and text generation:
+
+* **Embeddings:** `sentence-transformers/all-MiniLM-L6-v2`
+* **LLM:** `HuggingFaceH4/zephyr-7b-beta`
 
 ---
 
 ## 📂 Project Structure
 
+```text
 Note AI/
 │
-├── 📁 Client/
+├── 📁 Client/                  # Frontend (React + Vite)
 │   ├── 📂 public/
 │   ├── 📂 src/
 │   │   ├── 🖼️ assets/
@@ -49,84 +64,175 @@ Note AI/
 │   ├── 🧾 package.json
 │   └── 🌐 index.html
 │
-├── 🖥️ Server/
-│   ├── 🐍 main.py
-│   ├── 🧠 rag_pipeline.py
-│   ├── 📦 models/
-│   ├── 📂 uploads/
-│   ├── 🧠 vectorstore/
-│   ├── 🧾 requirements.txt
-│   └── 🔒 .env
-│
-└── 🚫 .gitignore
+└── 🖥️ Server/                  # Backend (FastAPI)
+    ├── 🐍 main.py
+    ├── 🧠 rag_pipeline.py
+    ├── 📦 models/
+    ├── 📂 uploads/
+    ├── 🧠 vectorstore/
+    ├── 🧾 requirements.txt
+    └── 🔒 .env
 
 
+Here is the polished Markdown code for your README.md file. I have organized it with clear headings, code blocks for commands, and a professional layout.
 
+You can copy the code block below and paste it directly into your README.md file.
+
+Markdown
+
+# 📘 Note AI
+
+> **A Document-Based Question Answering (RAG) System built with FastAPI, LangChain, and React.**
+
+**Note AI** allows you to upload multiple documents (PDF, DOCX, TXT), extract knowledge, and ask natural language questions about the content. The backend retrieves relevant chunks using vector search and generates accurate answers using Large Language Models (LLMs).
 
 ---
 
-## 🛠️ Installation & Setup
+## 📸 Screenshots
 
-### 1. Clone the repository
+| Dashboard | Q&A Interface | Chat History |
+|:---:|:---:|:---:|
+| ![Dashboard](Client/src/assets/screenshots/SS1.png) | ![QnA](Client/src/assets/screenshots/SS2.png) | ![History](Client/src/assets/screenshots/SS3.png) |
 
-git clone https://github.com/your-username/note-ai.git
+---
+
+## 🚀 Features
+
+### 🔹 Frontend (React + Vite)
+* **Clean UI:** Modern interface for uploading PDF, DOCX, or TXT files.
+* **Interactive Chat:** Real-time chat-style Q&A interface.
+* **History Tracking:** Sidebar displays chat history and previous model responses.
+* **Feedback:** Loading indicators, error handling, and smooth icons (React Icons).
+* **Configurable:** Environment-based API configuration.
+
+### 🔹 Backend (FastAPI + LangChain)
+* **Document Parsing:** Robust file upload endpoint supporting PDF & DOCX text extraction.
+* **Vector Search:** Embedding generation and indexing using **FAISS** or **Chroma**.
+* **RAG Pipeline:** Retrieval-Augmented Generation for accurate, context-aware answers.
+* **Contextual Memory:** Chat history support for follow-up queries.
+* **Model Flexibility:** Support for custom models (Mistral, Llama, Qwen, Zephyr).
+
+---
+
+## 🤖 Supported Models
+
+Note AI leverages Hugging Face models for embeddings and text generation:
+
+* **Embeddings:** `sentence-transformers/all-MiniLM-L6-v2`
+* **LLM:** `HuggingFaceH4/zephyr-7b-beta`
+
+---
+
+## 📂 Project Structure
+
+```text
+Note AI/
+│
+├── 📁 Client/                  # Frontend (React + Vite)
+│   ├── 📂 public/
+│   ├── 📂 src/
+│   │   ├── 🖼️ assets/
+│   │   │   └── 📸 screenshots/
+│   │   ├── 🧩 components/
+│   │   │   ├── 📄 FileUpload.jsx
+│   │   │   ├── 📄 QnA.jsx
+│   │   │   └── 📄 ChatHistoryDisplay.jsx
+│   │   ├── ⚛️ App.jsx
+│   │   ├── 🎨 App.css
+│   │   ├── ⚛️ main.jsx
+│   │   ├── 🎨 index.css
+│   │   └── 🎨 QnA.css
+│   ├── ⚙️ vite.config.js
+│   ├── 🧾 package.json
+│   └── 🌐 index.html
+│
+└── 🖥️ Server/                  # Backend (FastAPI)
+    ├── 🐍 main.py
+    ├── 🧠 rag_pipeline.py
+    ├── 📦 models/
+    ├── 📂 uploads/
+    ├── 🧠 vectorstore/
+    ├── 🧾 requirements.txt
+    └── 🔒 .env
+
+🛠️ Installation & Setup
+Follow these steps to run the project locally.
+
+1. Clone the repository
+Bash
+
+git clone [https://github.com/your-username/note-ai.git](https://github.com/your-username/note-ai.git)
 cd note-ai
-
 🧠 Backend Setup (FastAPI)
-2. Create virtual environment
-cd backend
-python -m venv venv
-source venv/bin/activate   # Mac/Linux
-venv\Scripts\activate      # Windows
+Navigate to the server directory and set up the Python environment.
 
-3. Install dependencies
+Bash
+
+# 1. Navigate to Server
+cd Server
+
+# 2. Create virtual environment
+python -m venv venv
+
+# 3. Activate virtual environment
+# Mac/Linux:
+source venv/bin/activate
+# Windows:
+venv\Scripts\activate
+
+# 4. Install dependencies
 pip install -r requirements.txt
 
-4. Run the FastAPI server
+# 5. Setup Environment Variables
+# Create a .env file in the Server directory and add your keys (if required by specific models)
+# HUGGINGFACEhub_API_TOKEN=your_token_here
+
+# 6. Run the server
 uvicorn main:app --reload --host 0.0.0.0 --port 8000
+The Backend will be running at: http://localhost:8000
 
+💻 Frontend Setup (React)
+Open a new terminal, navigate to the client directory, and start the UI.
 
-Backend runs at:
-👉 http://localhost:8000
+Bash
 
-💻 Frontend Setup (React + Vite)
-5. Install dependencies
-cd ../frontend
+# 1. Navigate to Client
+cd ../Client
+
+# 2. Install dependencies
 npm install
 
-6. Create environment file
-VITE_RENDER_API_URL=http://localhost:8000
+# 3. Configure Environment
+# Create a .env file in the Client directory:
+echo "VITE_RENDER_API_URL=http://localhost:8000" > .env
 
-7. Run app
+# 4. Run the app
 npm run dev
-
-
-Frontend runs at:
-👉 http://localhost:5173
+The Frontend will be running at: http://localhost:5173
 
 🧪 Usage Workflow
+Start the Backend: Ensure the FastAPI server is running.
 
-Start backend
+Start the Frontend: Ensure the React app is running.
 
-Start frontend
+Upload Documents: Use the "Upload" button to select PDF, DOCX, or TXT files.
 
-Upload a PDF, DOCX, or TXT file
+Processing: The system will extract text, create embeddings, and store them in the vector database.
 
-System extracts text + stores embeddings
+Ask Questions: Type your query in the chat input.
 
-Ask questions in the chatbox
+Get Answers: The AI will retrieve relevant context and generate an answer with sources displayed below.
 
-System retrieves relevant text and generates an answer
+🤝 Contributing
+Contributions are welcome! Please fork the repository and create a pull request.
 
-Sources are displayed under the answer
+📄 License
+MIT License
 
-🤖 Supported LLM Models
 
-UseD Hugging Face model for text-generation:
+### How to use this:
+1.  Create a file named `README.md` in the root of your project folder.
+2.  Paste the code above into that file.
+3.  **Important:** Check the path to your screenshots. In the code above, I assumed your screenshots are located at `Client/src/assets/screenshots/SS1.png`. If they are in a different folder (like a root `screenshots` folder), simply update the path in the `## 📸 Screenshots` section.
 
-sentence-transformers/all-MiniLM-L6-v2
-HuggingFaceH4/zephyr-7b-beta
-
-![Screenshot](Client/src/assets/screenshots/SS1.png)
-![Screenshot](Client/src/assets/screenshots/SS2.png)
-![Screenshot](Client/src/assets/screenshots/SS3.png)
+Would you like me to help generate a `requirements.txt` file based on the libraries mentioned as well?
