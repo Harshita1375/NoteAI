@@ -8,6 +8,12 @@
   --bubble-user: #58cc71; 
   --border: #465c71;
 }
+.divider {
+  border: none;
+  border-top: 2px solid #ddd;
+  margin: 10px 0 20px;
+}
+
 
 body {
   background: var(--bg-gradient); 
@@ -111,7 +117,7 @@ header.header p {
 
 .primary-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(161, 16, 16, 0.2);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.2);
 }
 
 .primary-btn:disabled {

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import axios from 'axios';
 import ChatHistoryDisplay from './ChatHistoryDisplay.jsx'; 
+import { IoSendSharp } from "react-icons/io5";
 import './QnA.css'; 
 
 const API_BASE = import.meta.env.VITE_RENDER_API_URL;
@@ -89,7 +90,7 @@ function QnA({ documentName }) {
                     disabled={!documentName || isAsking || !question.trim()}
                     className="btn btn-secondary"
                 >
-                    {isAsking ? 'Sending...' : 'Ask RAG'}
+                    {isAsking ? 'Sending...' : <IoSendSharp size={22} />}
                 </button>
             </div>
         </div>
