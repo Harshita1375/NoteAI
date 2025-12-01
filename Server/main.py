@@ -107,7 +107,10 @@ async def ask_doc(query: QAQuery):
     try:
         retriever = RAG_CHAINS[doc_name]
 
-        relevant_documents: List[Document] = await run_in_threadpool(retriever.get_relevant_documents, question)
+        # For LangChain v0.2+ use invoke()
+        relevant_documents: List[Document] = await run_in_threadpool(
+            retriever.invoke, question
+        )
 
         context_text = "\n\n---\n\n".join([doc.page_content for doc in relevant_documents])
         sources = sorted(list(set([doc.metadata.get('source', 'N/A') for doc in relevant_documents])))
@@ -121,6 +124,7 @@ async def ask_doc(query: QAQuery):
     except Exception as e:
         print(f"Error during retrieval: {e}")
         raise HTTPException(status_code=500, detail=f"Retrieval failed: {e}")
+
     
 @app.get("/health")
 def health():
