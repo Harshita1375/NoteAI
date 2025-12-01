@@ -8,8 +8,8 @@
 
 ## 📸 Screenshots
 
-| Dashboard | Q&A Interface | Chat History | Download Button | Downloaded PDF Preview |
-|:---:|:---:|:---:|:---:|:---:|
+| Dashboard | Q&A Interface | Chat History | Download Button |
+|:---:|:---:|:---:|:---:|
 | ![Dashboard](Client/src/assets/SS1.png) | ![QnA](Client/src/assets/SS2.png) | ![History](Client/src/assets/SS3.png) |![Download PDF](Client/src/assets/SS5.png) |
 
 ---
