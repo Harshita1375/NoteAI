@@ -33,6 +33,7 @@ app = FastAPI()
 FRONTEND_URL = "https://note-ai-beryl.vercel.app"
 ALLOWED_ORIGINS = [
     FRONTEND_URL,
+    "https://www.note-ai-beryl.vercel.app",
     "http://localhost:5173",  
     "http://127.0.0.1:5173",  
     "*", 
