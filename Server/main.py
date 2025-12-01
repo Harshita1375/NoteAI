@@ -1,14 +1,22 @@
+import os
+import sys
+
+if sys.platform.startswith('linux'):
+    try:
+        __import__('pysqlite3')
+        sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+    except ImportError:
+        pass
+
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel
-import os
 import shutil
 from typing import Dict, Any, List
 from dotenv import load_dotenv
 from pathlib import Path
 
-# --- New Imports for Chat Handling ---
 from langchain_huggingface import HuggingFaceEndpoint, HuggingFaceEndpointEmbeddings, ChatHuggingFace
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -20,20 +28,16 @@ load_dotenv(dotenv_path=os.path.join(Path(__file__).resolve().parent, ".env"))
 
 app = FastAPI()
 
-# --- Configuration ---
 RAG_CHAINS: Dict[str, Any] = {}
 
-# 1. Embedding Model
 embedding_model_name = "sentence-transformers/all-MiniLM-L6-v2"
 EMBEDDINGS = HuggingFaceEndpointEmbeddings(
     repo_id=embedding_model_name,
     task="feature-extraction",
 )
 
-# 2. LLM Model (The Fix: Conversational Setup)
 llm_repo_id = "HuggingFaceH4/zephyr-7b-beta"
 
-# We initialize the endpoint with task="conversational" to satisfy the API provider
 endpoint = HuggingFaceEndpoint(
     repo_id=llm_repo_id,
     task="conversational", 
@@ -42,16 +46,13 @@ endpoint = HuggingFaceEndpoint(
     repetition_penalty=1.03,
 )
 
-# We wrap it in ChatHuggingFace so LangChain formats the messages correctly
 llm = ChatHuggingFace(llm=endpoint)
 
-# 3. Chat Prompt Template (Structured for Chat Models)
 prompt_template = ChatPromptTemplate.from_messages([
     ("system", "You are a helpful AI assistant. Use the context provided below to answer the user's question. If you don't know the answer, say so."),
     ("human", "Context:\n{context}\n\nQuestion: {question}")
 ])
 
-# --- CORS Middleware ---
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -129,18 +130,15 @@ async def ask_doc(query: QAQuery):
         context_text = "\n\n".join([doc.page_content for doc in relevant_documents])
         sources = sorted(list(set([doc.metadata.get('source', 'N/A') for doc in relevant_documents])))
 
-        # 4. Invoke using the Chat Chain
-        # We create a chain: Prompt -> LLM
         chain = prompt_template | llm
         
-        # Invoke the chain
         response = await run_in_threadpool(
             chain.invoke, 
             {"context": context_text, "question": question}
         )
 
         return {
-            "answer": response.content.strip(), # 'content' holds the text in Chat messages
+            "answer": response.content.strip(), 
             "sources": sources,
             "document_name": doc_name
         }

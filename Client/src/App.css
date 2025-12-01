@@ -1,217 +1,123 @@
-/* Color Palette */
 :root {
-    --color-background: #121212; /* Deeper black for background */
-    --color-card-background: #1e1e1e; /* Dark slate for cards */
-    --color-text: #f0f0f0; /* Brighter white text */
-    --color-primary: #8bc34a; /* A vibrant lime green accent for success */
-    --color-highlight: #2196f3; /* A bright blue accent for Q&A */
-    --color-border: #333333;
-    --color-error: #ff5252;
-    --color-answer-bg: #282828;
-    --color-sources-bg: #303030;
+  --bg-gradient: linear-gradient(135deg, #43cbff 10%, #9708cc 100%);
+  --bg-card: rgba(42, 56, 111, 0.95);
+  --bg-input: #34495e;   
+  --text-main: #ecf0f1;  
+  --text-muted: #bdc3c7;  
+  --bubble-ai: #5dade2;    
+  --bubble-user: #58cc71; 
+  --border: #465c71;
 }
 
-/* Global Styles */
 body {
-    background-color: var(--color-background);
-    color: var(--color-text);
-    font-family: 'Inter', system-ui, sans-serif;
-    margin: 0;
-    padding: 0;
-    /* Ensure body takes up full viewport height for vertical centering effect */
-    min-height: 100vh; 
+  background: var(--bg-gradient); 
+  background-attachment: fixed;   
+  color: var(--text-main);
+  font-family: 'Segoe UI', 'Roboto', Helvetica, Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
 }
 
-/* ➡️ MODIFIED: Centralizing the main container */
 .app-container {
-    max-width: 900px; /* Bring back max-width for focus */
-    width: 90%; 
-    margin: 0 auto; /* Horizontal centering */
-    padding: 60px 0; /* Increased top/bottom padding */
-    min-height: calc(100vh - 120px); /* Adjust min-height based on padding */
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 40px 20px;
 }
 
-h1 {
-    border-bottom: 2px solid var(--color-primary);
-    padding-bottom: 15px;
-    margin-bottom: 20px;
-    font-size: 2.8em;
-    font-weight: 600;
+header.header {
+  text-align: center;
+  margin-bottom: 30px;
+  padding-bottom: 10px;
 }
 
-.subtitle {
-    color: #aaaaaa;
-    margin-bottom: 50px;
-    line-height: 1.5;
+header.header h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  margin: 0;
 }
 
-/* --- Card Styles (for FileUpload and QnA) --- */
+header.header p {
+  color: rgba(255,255,255,0.8);
+  font-size: 1.1rem;
+}
+
 .card {
-    padding: 30px;
-    background-color: var(--color-card-background);
-    border-radius: 12px; /* Slightly more rounded */
-    /* Richer shadow for depth */
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4); 
-    margin-bottom: 40px;
-    transition: all 0.3s ease;
+  background-color: var(--bg-card);
+  border-radius: 20px; 
+  padding: 30px;
+  margin-bottom: 25px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2); 
+  border: 1px solid rgba(255,255,255,0.1); 
+  backdrop-filter: blur(10px); 
 }
 
-.file-upload-card {
-    border-left: 5px solid var(--color-primary);
+.card-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.qna-card {
-    border-left: 5px solid var(--color-highlight);
+/* File Upload Zone */
+.upload-zone {
+  background-color: var(--bg-input);
+  border-radius: 15px;
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  border: 2px dashed rgba(126, 119, 111, 0.216);
 }
 
-/* --- Input and Button Styles --- */
-input[type="text"],
-.file-input-wrapper input[type="file"] {
-    padding: 12px;
-    border-radius: 6px;
-    border: 1px solid var(--color-border);
-    background-color: #0d0d0d; /* Even darker input background */
-    color: var(--color-text);
-    box-sizing: border-box;
-    transition: border-color 0.3s;
+.file-input {
+  color: var(--text-muted);
+  flex-grow: 1;
 }
 
-input[type="text"]:focus {
-    border-color: var(--color-highlight);
-    outline: none;
+.file-input::file-selector-button {
+  background-color: #2ecc71; 
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px; 
+  font-weight: bold;
+  cursor: pointer;
+  margin-right: 15px;
+  transition: transform 0.2s;
 }
 
-.action-group {
-    display: flex;
-    align-items: center;
-    gap: 15px; /* Use gap for spacing instead of margin-right */
+.file-input::file-selector-button:hover {
+  transform: scale(1.05);
+  background-color: #27ae60;
 }
 
-.action-group input[type="text"] {
-    flex-grow: 1;
+.primary-btn {
+  background-color: var(--bubble-user); 
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 25px; 
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  transition: all 0.2s;
 }
 
-.btn {
-    border: none;
-    padding: 12px 25px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: bold;
-    letter-spacing: 0.5px;
-    transition: background-color 0.2s, transform 0.1s;
+.primary-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(161, 16, 16, 0.2);
 }
 
-.btn:active {
-    transform: scale(0.98);
-}
-
-.btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-}
-
-/* File Upload Specific Styles */
-.file-upload-card h2 {
-    color: var(--color-primary);
-    margin-top: 0;
-}
-
-.btn-primary {
-    background-color: var(--color-primary);
-    color: var(--color-card-background);
-}
-
-.btn-primary:not(:disabled):hover {
-    background-color: #aed581; /* Lighter shade */
-}
-
-.upload-status {
-    font-size: 0.95em;
-    padding: 10px 0 0 0;
-}
-
-.upload-status.error {
-    color: var(--color-error);
-}
-
-.upload-status.success {
-    color: var(--color-primary);
-}
-
-/* Q&A Specific Styles */
-.qna-card h2 {
-    color: var(--color-highlight);
-    margin-top: 0;
-}
-
-.active-doc-status {
-    font-size: 1.1em;
-    margin-bottom: 20px;
-}
-
-.active-doc-status strong {
-    margin-left: 8px;
-    font-weight: 600;
-}
-
-.active-doc-status .active {
-    color: var(--color-primary);
-}
-
-.active-doc-status .inactive {
-    color: var(--color-error);
-}
-
-.btn-secondary {
-    background-color: var(--color-highlight);
-    color: white;
-}
-
-.btn-secondary:not(:disabled):hover {
-    background-color: #42a5f5; /* Lighter shade */
-}
-
-.answer-area {
-    padding-top: 30px;
-    margin-top: 30px;
-    border-top: 1px solid var(--color-border);
-}
-
-.ai-answer-box {
-    padding: 20px;
-    background-color: var(--color-answer-bg);
-    border-radius: 8px;
-    min-height: 100px; /* Taller box */
-    white-space: pre-wrap;
-    line-height: 1.6;
-    border-left: 4px solid var(--color-primary); 
-    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
-}
-
-.sources-list-container {
-    margin-top: 25px;
-}
-
-.sources-list-container h4 {
-    color: #bdbdbd;
-}
-
-.sources-list {
-    list-style: none;
-    padding: 0;
-    background-color: var(--color-sources-bg);
-    border-radius: 8px;
-    border: 1px solid var(--color-border);
-    overflow: hidden; /* Contains the border radii */
-}
-
-.sources-list li {
-    padding: 12px 18px;
-    border-bottom: 1px dashed #444444;
-    font-size: 0.85em;
-    color: #c0c0c0;
-}
-
-.sources-list li:last-child {
-    border-bottom: none;
+.primary-btn:disabled {
+  background-color: var(--bg-input);
+  color: var(--text-muted);
+  box-shadow: none;
+  transform: none;
+  cursor: not-allowed;
 }

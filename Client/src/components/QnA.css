@@ -1,0 +1,127 @@
+/* src/components/QnA.css */
+
+/* --- Card Setup --- */
+.qna-card {
+  /* Inherits styles from App.css .card, but we ensure flex layout */
+  display: flex;
+  flex-direction: column;
+}
+
+.qna-card h2 {
+  color: white;
+  margin-top: 0;
+  font-size: 1.4rem;
+}
+
+/* --- Active Document Indicator --- */
+.active-doc-status {
+  background-color: rgba(0,0,0,0.2);
+  padding: 10px 15px;
+  border-radius: 10px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 20px;
+  display: inline-block;
+}
+
+.active-doc-status strong.active {
+  color: #2ecc71; /* Green text for active */
+  font-weight: 700;
+}
+
+.active-doc-status strong.inactive {
+  color: #e74c3c; /* Red text for inactive */
+}
+
+/* --- CHAT BUBBLES (Crucial for the look) --- */
+/* Add these classes to your ChatHistoryDisplay.jsx messages */
+
+.chat-message {
+  padding: 12px 18px;
+  border-radius: 18px;
+  margin-bottom: 12px;
+  max-width: 80%;
+  line-height: 1.5;
+  font-size: 1rem;
+  position: relative;
+  animation: fadeIn 0.3s ease;
+}
+
+/* User Bubble (Right - Green) */
+.chat-message.human {
+  background-color: var(--bubble-user); /* Green */
+  color: white;
+  align-self: flex-end; /* Pushes to right */
+  margin-left: auto;
+  border-bottom-right-radius: 4px; /* Slight sharp corner */
+}
+
+/* AI Bubble (Left - Blue) */
+.chat-message.ai {
+  background-color: var(--bubble-ai); /* Blue */
+  color: white;
+  align-self: flex-start; /* Pushes to left */
+  margin-right: auto;
+  border-bottom-left-radius: 4px;
+}
+
+/* --- Input Area (Bottom Bar) --- */
+.action-group {
+  margin-top: auto;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  display: flex;
+  gap: 10px;
+}
+
+.action-group input[type="text"] {
+  flex-grow: 1;
+  background-color: rgba(0,0,0,0.3); /* Dark transparent input */
+  border: none;
+  color: white;
+  padding: 14px 20px;
+  border-radius: 25px; /* Pill shape input */
+  font-size: 1rem;
+  outline: none;
+}
+
+.action-group input[type="text"]::placeholder {
+  color: rgba(255,255,255,0.5);
+}
+
+.action-group input[type="text"]:focus {
+  background-color: rgba(0,0,0,0.5);
+  box-shadow: 0 0 0 2px var(--bubble-ai);
+}
+
+/* Send Button */
+.btn-secondary {
+  background-color: var(--bubble-ai); /* Blue Send Button */
+  color: white;
+  border: none;
+  width: 50px; /* Circle button or pill */
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem; /* Icon size */
+  cursor: pointer;
+  transition: transform 0.2s;
+  padding: 0; /* Reset padding for circle */
+}
+
+.btn-secondary:hover:not(:disabled) {
+  transform: scale(1.1);
+  background-color: #3498db;
+}
+
+.btn-secondary:disabled {
+  background-color: var(--bg-input);
+  cursor: default;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

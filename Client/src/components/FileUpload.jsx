@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import axios from 'axios';
-// No need for inline styles or color definitions here, relying on CSS classes
 
 const API_BASE = import.meta.env.VITE_RENDER_API_URL;
 
