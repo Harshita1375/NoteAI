@@ -8,8 +8,9 @@ from typing import Dict, Any, List
 from dotenv import load_dotenv
 from pathlib import Path
 
-# Using the remote API embeddings class
-from langchain_huggingface import HuggingFaceEndpointEmbeddings
+# --- New Imports for Chat Handling ---
+from langchain_huggingface import HuggingFaceEndpoint, HuggingFaceEndpointEmbeddings, ChatHuggingFace
+from langchain_core.prompts import ChatPromptTemplate
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
 from langchain_core.documents import Document
@@ -17,17 +18,40 @@ from langchain_community.document_loaders import PyPDFLoader, TextLoader, Docx2t
 
 load_dotenv(dotenv_path=os.path.join(Path(__file__).resolve().parent, ".env"))
 
-RAG_CHAINS: Dict[str, Any] = {}
-model_name = "sentence-transformers/all-MiniLM-L6-v2"
+app = FastAPI()
 
+# --- Configuration ---
+RAG_CHAINS: Dict[str, Any] = {}
+
+# 1. Embedding Model
+embedding_model_name = "sentence-transformers/all-MiniLM-L6-v2"
 EMBEDDINGS = HuggingFaceEndpointEmbeddings(
-    repo_id=model_name,
+    repo_id=embedding_model_name,
     task="feature-extraction",
 )
 
-app = FastAPI()
+# 2. LLM Model (The Fix: Conversational Setup)
+llm_repo_id = "HuggingFaceH4/zephyr-7b-beta"
 
-FRONTEND_URL = "https://note-ai-beryl.vercel.app"
+# We initialize the endpoint with task="conversational" to satisfy the API provider
+endpoint = HuggingFaceEndpoint(
+    repo_id=llm_repo_id,
+    task="conversational", 
+    max_new_tokens=512,
+    do_sample=False,
+    repetition_penalty=1.03,
+)
+
+# We wrap it in ChatHuggingFace so LangChain formats the messages correctly
+llm = ChatHuggingFace(llm=endpoint)
+
+# 3. Chat Prompt Template (Structured for Chat Models)
+prompt_template = ChatPromptTemplate.from_messages([
+    ("system", "You are a helpful AI assistant. Use the context provided below to answer the user's question. If you don't know the answer, say so."),
+    ("human", "Context:\n{context}\n\nQuestion: {question}")
+])
+
+# --- CORS Middleware ---
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -40,13 +64,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 class QAQuery(BaseModel):
     document_name: str
     question: str
 
 def get_document_loader(file_path: str):
-    """Selects the correct LangChain DocumentLoader based on file extension."""
     ext = os.path.splitext(file_path)[1].lower()
     if ext == ".pdf":
         return PyPDFLoader(file_path)
@@ -59,18 +81,15 @@ def get_document_loader(file_path: str):
 
 @app.get("/")
 def read_root():
-    """Returns the status and active documents."""
     return {
-        "Status": "Semantic Search Backend Running (LLM-Free)",
-        "Embedding_Model": model_name,
+        "Status": "RAG Backend Running",
+        "LLM_Model": llm_repo_id,
         "Active_Docs": list(RAG_CHAINS.keys())
     }
 
 @app.post("/process-docs")
 async def process_docs(file: UploadFile = File(...)):
-    """Handles file upload, splits text, creates embeddings, and stores the retriever."""
     file_path = f"temp_{file.filename}"
-
     try:
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
@@ -78,23 +97,22 @@ async def process_docs(file: UploadFile = File(...)):
         loader = get_document_loader(file_path)
         documents: List[Document] = loader.load()
 
-        text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+        text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
         texts = text_splitter.split_documents(documents)
 
+        vectorstore = Chroma.from_documents(texts, EMBEDDINGS)
+        retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
+
+        doc_name = file.filename
+        RAG_CHAINS[doc_name] = retriever
+
+        return {"message": f"Successfully processed: {doc_name}", "document_name": doc_name}
+
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Document processing failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Processing failed: {e}")
     finally:
         if os.path.exists(file_path):
             os.remove(file_path)
-
-    # Create Chroma vectorstore and retriever
-    vectorstore = Chroma.from_documents(texts, EMBEDDINGS)
-    retriever = vectorstore.as_retriever(search_kwargs={"k":2})
-
-    doc_name = file.filename
-    RAG_CHAINS[doc_name] = retriever
-
-    return {"message": f"Successfully processed and indexed document: {doc_name}", "document_name": doc_name}
 
 @app.post("/ask-doc")
 async def ask_doc(query: QAQuery):
@@ -102,29 +120,35 @@ async def ask_doc(query: QAQuery):
     question = query.question
 
     if doc_name not in RAG_CHAINS:
-        raise HTTPException(status_code=404, detail=f"Document '{doc_name}' not found or not processed.")
+        raise HTTPException(status_code=404, detail=f"Document '{doc_name}' not found.")
 
     try:
         retriever = RAG_CHAINS[doc_name]
+        relevant_documents = await run_in_threadpool(retriever.invoke, question)
 
-        relevant_documents: List[Document] = await run_in_threadpool(
-            retriever.invoke, question
-        )
-
-        context_text = "\n\n---\n\n".join([doc.page_content for doc in relevant_documents])
+        context_text = "\n\n".join([doc.page_content for doc in relevant_documents])
         sources = sorted(list(set([doc.metadata.get('source', 'N/A') for doc in relevant_documents])))
 
+        # 4. Invoke using the Chat Chain
+        # We create a chain: Prompt -> LLM
+        chain = prompt_template | llm
+        
+        # Invoke the chain
+        response = await run_in_threadpool(
+            chain.invoke, 
+            {"context": context_text, "question": question}
+        )
+
         return {
-            "answer": f"Retrieved Context (Top {len(relevant_documents)} Chunks):\n\n{context_text}",
+            "answer": response.content.strip(), # 'content' holds the text in Chat messages
             "sources": sources,
             "document_name": doc_name
         }
 
     except Exception as e:
-        print(f"Error during retrieval: {e}")
+        print(f"Error: {e}")
         raise HTTPException(status_code=500, detail=f"Retrieval failed: {e}")
 
-    
 @app.get("/health")
 def health():
     return {"status": "ok"}
