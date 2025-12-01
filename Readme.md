@@ -8,9 +8,9 @@
 
 ## 📸 Screenshots
 
-| Dashboard | Q&A Interface | Chat History |
-|:---:|:---:|:---:|
-| ![Dashboard](Client/src/assets/SS1.png) | ![QnA](Client/src/assets/SS2.png) | ![History](Client/src/assets/SS3.png) |
+| Dashboard | Q&A Interface | Chat History | Download Button | Downloaded PDF Preview |
+|:---:|:---:|:---:|:---:|:---:|
+| ![Dashboard](Client/src/assets/SS1.png) | ![QnA](Client/src/assets/SS2.png) | ![History](Client/src/assets/SS3.png) |![Download Button](Client/src/assets/SS4.png) | ![Downloaded PDF](Client/src/assets/SS5.png) |
 
 ---
 

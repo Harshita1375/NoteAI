@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import axios from 'axios';
+import { jsPDF } from "jspdf"; 
 import ChatHistoryDisplay from './ChatHistoryDisplay.jsx'; 
 import { IoSendSharp } from "react-icons/io5";
+import { FaDownload } from "react-icons/fa"; 
 import './QnA.css'; 
 
 const API_BASE = import.meta.env.VITE_RENDER_API_URL;
@@ -11,6 +13,51 @@ function QnA({ documentName }) {
     const [chatHistory, setChatHistory] = useState([]); 
     const [sources, setSources] = useState([]); 
     const [isAsking, setIsAsking] = useState(false);
+
+    const handleDownloadPDF = () => {
+        if (chatHistory.length === 0) {
+            alert("No chat history to download yet!");
+            return;
+        }
+        const doc = new jsPDF();
+        doc.setFontSize(18);
+        doc.text(`Note AI Chat: ${documentName || 'Untitled'}`, 10, 10);
+        
+        doc.setFontSize(12);
+        let yPos = 20; 
+        const pageHeight = doc.internal.pageSize.height;
+        const margin = 10;
+        const maxLineWidth = 180; 
+
+        chatHistory.forEach((msg) => {
+            if (msg.content === '🔍 Thinking...') return;
+            const speaker = msg.type === 'human' ? "You" : "AI";
+        
+            if (yPos > pageHeight - 20) {
+                doc.addPage();
+                yPos = 20;
+            }
+            doc.setFont("helvetica", "bold");
+            doc.text(`${speaker}:`, margin, yPos);
+            yPos += 7;
+
+            doc.setFont("helvetica", "normal");
+            const textLines = doc.splitTextToSize(msg.content, maxLineWidth);
+            
+            textLines.forEach(line => {
+                if (yPos > pageHeight - 10) {
+                    doc.addPage();
+                    yPos = 20;
+                }
+                doc.text(line, margin, yPos);
+                yPos += 7; 
+            });
+
+            yPos += 5; 
+        });
+
+        doc.save(`chat_history_${documentName || 'doc'}.pdf`);
+    };
 
     const handleAsk = async () => {
         const trimmedQuestion = question.trim();
@@ -59,10 +106,27 @@ function QnA({ documentName }) {
 
     return (
         <div className="card qna-card">
-            {/* Styles moved to CSS file under .qna-card h2 */}
-            <h2>💬 Ask a Question</h2>
+            {/* Header Flex Container for Title + Download Button */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                <h2 style={{ margin: 0 }}>💬 Ask a Question</h2>
+                
+                <button 
+                    onClick={handleDownloadPDF} 
+                    disabled={chatHistory.length === 0}
+                    title="Download Chat History as PDF"
+                    style={{
+                        background: 'none',
+                        border: 'none',
+                        color: chatHistory.length === 0 ? '#ccc' : '#fff', // Gray if empty, White if active
+                        cursor: chatHistory.length === 0 ? 'not-allowed' : 'pointer',
+                        fontSize: '1.2rem',
+                        padding: '5px'
+                    }}
+                >
+                    <FaDownload />
+                </button>
+            </div>
             
-            {/* Styles moved to CSS file under .active-doc-status */}
             <p className="active-doc-status">
                 Active Document: 
                 <strong className={documentName ? 'active' : 'inactive'}>
@@ -90,7 +154,7 @@ function QnA({ documentName }) {
                     disabled={!documentName || isAsking || !question.trim()}
                     className="btn btn-secondary"
                 >
-                    {isAsking ? 'Sending...' : <IoSendSharp size={22} />}
+                    {isAsking ? "Sending..." : <IoSendSharp size={22} />}
                 </button>
             </div>
         </div>
