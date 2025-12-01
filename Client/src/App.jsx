@@ -1,36 +1,28 @@
 import { useState } from 'react'
-import axios from 'axios'
+import FileUpload from './components/FileUpload.jsx';
+import QnA from './components/QnA.jsx';
 
-// Get the API URL from the environment (Vite exposes VITE_ prefixed variables)
 const API_BASE = import.meta.env.VITE_RENDER_API_URL;
 
 function App() {
-  const [file, setFile] = useState(null)
+  const [activeDocument, setActiveDocument] = useState(null);
 
-  const handleUpload = async () => {
-    if (!file) {
-      alert("Please select a file first.");
-      return;
-    }
-    
-    const formData = new FormData();
-    formData.append('files', file); 
-    
-    try {
-        // Now using the environment variable for the API call
-        const response = await axios.post(`${API_BASE}/process-docs`, formData);
-        alert(`Success! Response: ${response.data.message}`);
-    } catch (error) {
-        alert("Upload failed. Check console and ensure backend is running.");
-        console.error("Upload error:", error);
-    }
-  }
+  const handleUploadSuccess = (docName) => {
+    setActiveDocument(docName);
+  };
 
   return (
-    <div>
+    <div style={{ maxWidth: '800px', margin: '0 auto', fontFamily: 'Arial, sans-serif' }}>
       <h1>RAG Notebook (API: {API_BASE})</h1>
-      <input type="file" onChange={(e) => setFile(e.target.files[0])} />
-      <button onClick={handleUpload}>Upload & Process</button>
+      <p>This application uses FastAPI for the backend RAG pipeline and a React frontend for file upload and Q&A.</p>
+      
+      {/* Upload Component */}
+      <FileUpload onUploadSuccess={handleUploadSuccess} />
+
+      <hr style={{ margin: '30px 0' }}/>
+
+      {/* Q&A Component */}
+      <QnA documentName={activeDocument} />
     </div>
   )
 }
