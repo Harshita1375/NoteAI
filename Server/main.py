@@ -40,9 +40,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.options("/{rest_of_path:path}")
-async def preflight_handler():
-    return {}
 
 class QAQuery(BaseModel):
     document_name: str
