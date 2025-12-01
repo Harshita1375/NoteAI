@@ -1,86 +1,101 @@
 import { useState } from 'react';
 import axios from 'axios';
+// No need for inline styles or color definitions here, relying on CSS classes
 
 const API_BASE = import.meta.env.VITE_RENDER_API_URL;
 
 function QnA({ documentName }) {
-  const [question, setQuestion] = useState('');
-  const [answer, setAnswer] = useState('Ask a question once a document is uploaded.');
-  const [sources, setSources] = useState([]); // <-- NEW STATE
-  const [isAsking, setIsAsking] = useState(false);
+  const [question, setQuestion] = useState('');
+  const [answer, setAnswer] = useState('Ask a question once a document is uploaded.');
+  const [sources, setSources] = useState([]);
+  const [isAsking, setIsAsking] = useState(false);
 
-  const handleAsk = async () => {
-    if (!documentName) {
-      alert("Please upload and process a document first.");
-      return;
-    }
-    if (!question.trim()) {
-      alert("Please enter a question.");
-      return;
-    }
+  const handleAsk = async () => {
+    if (!documentName) {
+      setAnswer("Error: Please upload and process a document first.");
+      setSources([]);
+      return;
+    }
+    if (!question.trim()) {
+      setAnswer("Error: Please enter a question.");
+      setSources([]);
+      return;
+    }
 
-    setIsAsking(true);
-    setAnswer('Searching...');
-    setSources([]); // Clear sources on new question
-    
-    try {
-      const response = await axios.post(`${API_BASE}/ask-doc`, {
-        document_name: documentName,
-        question: question.trim()
-      });
+    setIsAsking(true);
+    setAnswer('🔍 Searching and generating answer...');
+    setSources([]);
+    
+    try {
+      const response = await axios.post(`${API_BASE}/ask-doc`, {
+        document_name: documentName,
+        question: question.trim()
+      });
 
-      // Extract both answer and sources from the backend response
-      setAnswer(response.data.answer); 
-      setSources(response.data.sources || []); // Safely set sources
-    } catch (error) {
-      console.error("Q&A error:", error);
-      setAnswer(`Error: Failed to get an answer. ${error.response?.data?.detail || error.message}`);
-      setSources([]);
-    } finally {
-      setIsAsking(false);
-    }
-  };
+      setAnswer(response.data.answer); 
+      setSources(response.data.sources || []);
+    } catch (error) {
+      console.error("Q&A error:", error);
+      setAnswer(`Error: Failed to get an answer. ${error.response?.data?.detail || error.message}`);
+      setSources([]);
+    } finally {
+      setIsAsking(false);
+    }
+  };
 
-  return (
-    <div style={{ padding: '20px', border: '1px solid #ccc', borderRadius: '8px' }}>
-      <h2>💬 Ask a Question</h2>
-      <p>Active Document: <strong>{documentName || 'None'}</strong></p>
-      
-      {/* Input and Button remain the same */}
-      <input
-        type="text"
-        value={question}
-        onChange={(e) => setQuestion(e.target.value)}
-        placeholder="Enter your question here..."
-        disabled={!documentName || isAsking}
-        style={{ width: '80%', padding: '8px', marginRight: '10px' }}
-      />
-      <button 
-        onClick={handleAsk} 
-        disabled={!documentName || isAsking || !question.trim()}
-      >
-        {isAsking ? 'Searching...' : 'Ask RAG'}
-      </button>
+  return (
+    <div className="card qna-card">
+      <h2>💬 Ask a Question</h2>
+      <p className="active-doc-status" style={{ color: '#aaaaaa' }}>
+        Active Document: 
+        <strong className={documentName ? 'active' : 'inactive'}>
+          {documentName || 'None'}
+        </strong>
+      </p>
+      
+      <div className="action-group">
+        <input
+          type="text"
+          value={question}
+          onChange={(e) => setQuestion(e.target.value)}
+          placeholder="Enter your question here (e.g., 'summarize' or 'what is the main topic?')"
+          disabled={!documentName || isAsking}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && documentName && question.trim() && !isAsking) {
+              handleAsk();
+            }
+          }}
+        />
+        <button 
+          onClick={handleAsk} 
+          disabled={!documentName || isAsking || !question.trim()}
+          className="btn btn-secondary"
+        >
+          {isAsking ? 'Generating...' : 'Ask RAG'}
+        </button>
+      </div>
 
-      <div style={{ marginTop: '20px', borderTop: '1px solid #eee', paddingTop: '10px' }}>
-        <h3>AI Answer:</h3>
-        {/* Display the main answer/context */}
-        <p style={{ whiteSpace: 'pre-wrap' }}>{answer}</p>
-        
-        {/* Display Sources if available */}
-        {sources.length > 0 && (
-          <div style={{ marginTop: '15px', padding: '10px', borderLeft: '3px solid #007bff', backgroundColor: '#f0f8ff' }}>
-            <strong>Sources:</strong>
-            <ul>
-              {sources.map((src, index) => (
-                <li key={index} style={{ fontSize: '0.9em' }}>{src}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+      <div className="answer-area">
+        <h3>🤖 AI Answer:</h3>
+        <div className="ai-answer-box">
+          {answer}
+        </div>
+        
+        {sources.length > 0 && (
+          <div style={{ marginTop: '20px' }}>
+            <h4 style={{ marginBottom: '10px' }}>📄 Retrieved Sources (Chunks):</h4>
+            <ul className="sources-list">
+              {sources.map((src, index) => (
+                <li key={index}>
+                  **Chunk {index + 1}:** {src}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export default QnA;
