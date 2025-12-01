@@ -2,21 +2,31 @@ from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import os
-import uvicorn
 import shutil
 from typing import Dict, Any, List
+from dotenv import load_dotenv
+import os 
+from pathlib import Path
 
-from langchain_community.document_loaders import PyPDFLoader, TextLoader, Docx2txtLoader
+# Using the remote API embeddings class
+from langchain_huggingface import HuggingFaceEndpointEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
-from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_core.documents import Document
+from langchain_community.document_loaders import PyPDFLoader, TextLoader, Docx2txtLoader
+
+load_dotenv(dotenv_path=os.path.join(Path(__file__).resolve().parent, ".env")) 
+
+from fastapi import FastAPI, UploadFile, File, HTTPException
 
 RAG_CHAINS: Dict[str, Any] = {}
-
-
 model_name = "sentence-transformers/all-MiniLM-L6-v2"
-EMBEDDINGS = HuggingFaceEmbeddings(model_name=model_name)
+
+
+EMBEDDINGS = HuggingFaceEndpointEmbeddings(
+    repo_id=model_name,
+    task="feature-extraction", 
+)
 
 app = FastAPI()
 
@@ -109,4 +119,3 @@ async def ask_doc(query: QAQuery):
     except Exception as e:
         print(f"Error during retrieval: {e}")
         raise HTTPException(status_code=500, detail=f"Retrieval failed: {e}")
-
