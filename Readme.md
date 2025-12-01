@@ -10,7 +10,7 @@
 
 | Dashboard | Q&A Interface | Chat History |
 |:---:|:---:|:---:|
-| ![Dashboard](Client/src/assets/screenshots/SS1.png) | ![QnA](Client/src/assets/screenshots/SS2.png) | ![History](Client/src/assets/screenshots/SS3.png) |
+| ![Dashboard](Client/src/assets/SS1.png) | ![QnA](Client/src/assets/SS2.png) | ![History](Client/src/assets/SS3.png) |
 
 ---
 
@@ -119,11 +119,11 @@ cd ../Client
 npm install
 
 ## 3. Configure Environment
- Create a .env file in the Client directory:
-echo "VITE_RENDER_API_URL=http://localhost:8000" > .env
+Create a .env file in the Client directory:
+echo "VITE_RENDER_API_URL=http://localhost:8000"  .env
 
 ## 4. Run the app
-npm run dev
+npm run dev<br>
 The Frontend will be running at: http://localhost:5173
 
 # 🧪 Usage Workflow
@@ -144,9 +144,3 @@ Contributions are welcome! Please fork the repository and create a pull request.
 
 # 📄 License
 MIT License
-
-
-### How to use this:
-1.  Create a file named `README.md` in the root of your project folder.
-2.  Paste the code above into that file.
-3.  **Important:** Check the path to your screenshots. In the code above, I assumed your screenshots are located at `Client/src/assets/screenshots/SS1.png`. If they are in a different folder (like a root `screenshots` folder), simply update the path in the `## 📸 Screenshots` section.
