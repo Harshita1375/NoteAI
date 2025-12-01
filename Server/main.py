@@ -89,7 +89,7 @@ async def process_docs(file: UploadFile = File(...)):
 
     # Create Chroma vectorstore and retriever
     vectorstore = Chroma.from_documents(texts, EMBEDDINGS)
-    retriever = vectorstore.as_retriever(search_kwargs={"k": 4})
+    retriever = vectorstore.as_retriever(search_kwargs={"k":2})
 
     doc_name = file.filename
     RAG_CHAINS[doc_name] = retriever
@@ -107,7 +107,6 @@ async def ask_doc(query: QAQuery):
     try:
         retriever = RAG_CHAINS[doc_name]
 
-        # For LangChain v0.2+ use invoke()
         relevant_documents: List[Document] = await run_in_threadpool(
             retriever.invoke, question
         )
