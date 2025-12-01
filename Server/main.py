@@ -1,11 +1,11 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel
 import os
 import shutil
 from typing import Dict, Any, List
 from dotenv import load_dotenv
-import os 
 from pathlib import Path
 
 # Using the remote API embeddings class
@@ -15,36 +15,34 @@ from langchain_community.vectorstores import Chroma
 from langchain_core.documents import Document
 from langchain_community.document_loaders import PyPDFLoader, TextLoader, Docx2txtLoader
 
-load_dotenv(dotenv_path=os.path.join(Path(__file__).resolve().parent, ".env")) 
-
-from fastapi import FastAPI, UploadFile, File, HTTPException
+load_dotenv(dotenv_path=os.path.join(Path(__file__).resolve().parent, ".env"))
 
 RAG_CHAINS: Dict[str, Any] = {}
 model_name = "sentence-transformers/all-MiniLM-L6-v2"
 
-
 EMBEDDINGS = HuggingFaceEndpointEmbeddings(
     repo_id=model_name,
-    task="feature-extraction", 
+    task="feature-extraction",
 )
 
 app = FastAPI()
 
 FRONTEND_URL = "https://note-ai-beryl.vercel.app"
-ALLOWED_ORIGINS = [
-    FRONTEND_URL,
-    "https://www.note-ai-beryl.vercel.app",
-    "http://localhost:5173",  
-    "http://127.0.0.1:5173",  
-    "*", 
-]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS, 
+    allow_origins=[
+        "https://note-ai-beryl.vercel.app",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.options("/{rest_of_path:path}")
+async def preflight_handler():
+    return {}
 
 class QAQuery(BaseModel):
     document_name: str
@@ -66,7 +64,7 @@ def get_document_loader(file_path: str):
 def read_root():
     """Returns the status and active documents."""
     return {
-        "Status": "Semantic Search Backend Running (LLM-Free)", 
+        "Status": "Semantic Search Backend Running (LLM-Free)",
         "Embedding_Model": model_name,
         "Active_Docs": list(RAG_CHAINS.keys())
     }
@@ -74,13 +72,12 @@ def read_root():
 @app.post("/process-docs")
 async def process_docs(file: UploadFile = File(...)):
     """Handles file upload, splits text, creates embeddings, and stores the retriever."""
-    
     file_path = f"temp_{file.filename}"
-    
+
     try:
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
-        
+
         loader = get_document_loader(file_path)
         documents: List[Document] = loader.load()
 
@@ -91,35 +88,36 @@ async def process_docs(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=f"Document processing failed: {e}")
     finally:
         if os.path.exists(file_path):
-             os.remove(file_path)
+            os.remove(file_path)
 
+    # Create Chroma vectorstore and retriever
     vectorstore = Chroma.from_documents(texts, EMBEDDINGS)
     retriever = vectorstore.as_retriever(search_kwargs={"k": 4})
-    
+
     doc_name = file.filename
     RAG_CHAINS[doc_name] = retriever
-    
+
     return {"message": f"Successfully processed and indexed document: {doc_name}", "document_name": doc_name}
 
 @app.post("/ask-doc")
 async def ask_doc(query: QAQuery):
     doc_name = query.document_name
     question = query.question
-    
+
     if doc_name not in RAG_CHAINS:
         raise HTTPException(status_code=404, detail=f"Document '{doc_name}' not found or not processed.")
 
     try:
         retriever = RAG_CHAINS[doc_name]
 
-        # NEW LangChain API – async version
-        relevant_documents: List[Document] = await retriever.ainvoke(question)
+        # Call the synchronous retriever method in a threadpool so async event loop isn't blocked
+        relevant_documents: List[Document] = await run_in_threadpool(retriever.get_relevant_documents, question)
 
         context_text = "\n\n---\n\n".join([doc.page_content for doc in relevant_documents])
         sources = sorted(list(set([doc.metadata.get('source', 'N/A') for doc in relevant_documents])))
 
         return {
-            "answer": f"Retrieved Context (Top {len(relevant_documents)} Chunks):\n\n{context_text}", 
+            "answer": f"Retrieved Context (Top {len(relevant_documents)} Chunks):\n\n{context_text}",
             "sources": sources,
             "document_name": doc_name
         }
@@ -127,3 +125,7 @@ async def ask_doc(query: QAQuery):
     except Exception as e:
         print(f"Error during retrieval: {e}")
         raise HTTPException(status_code=500, detail=f"Retrieval failed: {e}")
+    
+@app.get("/health")
+def health():
+    return {"status": "ok"}
