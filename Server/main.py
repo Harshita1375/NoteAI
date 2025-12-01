@@ -8,9 +8,8 @@ from typing import Dict, Any, List
 from dotenv import load_dotenv
 from pathlib import Path
 
-# FIX: Use local embeddings (no API calls)
-from langchain_huggingface import HuggingFaceEmbeddings
-
+# Using the remote API embeddings class
+from langchain_huggingface import HuggingFaceEndpointEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
 from langchain_core.documents import Document
@@ -21,12 +20,14 @@ load_dotenv(dotenv_path=os.path.join(Path(__file__).resolve().parent, ".env"))
 RAG_CHAINS: Dict[str, Any] = {}
 model_name = "sentence-transformers/all-MiniLM-L6-v2"
 
-# FIXED: Local Embeddings (no token needed, no errors)
-EMBEDDINGS = HuggingFaceEmbeddings(model_name=model_name)
+EMBEDDINGS = HuggingFaceEndpointEmbeddings(
+    repo_id=model_name,
+    task="feature-extraction",
+)
 
 app = FastAPI()
 
-# CORS
+FRONTEND_URL = "https://note-ai-beryl.vercel.app"
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -39,10 +40,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 class QAQuery(BaseModel):
     document_name: str
     question: str
-
 
 def get_document_loader(file_path: str):
     """Selects the correct LangChain DocumentLoader based on file extension."""
@@ -65,7 +66,6 @@ def read_root():
         "Active_Docs": list(RAG_CHAINS.keys())
     }
 
-
 @app.post("/process-docs")
 async def process_docs(file: UploadFile = File(...)):
     """Handles file upload, splits text, creates embeddings, and stores the retriever."""
@@ -78,10 +78,7 @@ async def process_docs(file: UploadFile = File(...)):
         loader = get_document_loader(file_path)
         documents: List[Document] = loader.load()
 
-        text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=1000,
-            chunk_overlap=200
-        )
+        text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
         texts = text_splitter.split_documents(documents)
 
     except Exception as e:
@@ -97,11 +94,7 @@ async def process_docs(file: UploadFile = File(...)):
     doc_name = file.filename
     RAG_CHAINS[doc_name] = retriever
 
-    return {
-        "message": f"Successfully processed and indexed document: {doc_name}",
-        "document_name": doc_name
-    }
-
+    return {"message": f"Successfully processed and indexed document: {doc_name}", "document_name": doc_name}
 
 @app.post("/ask-doc")
 async def ask_doc(query: QAQuery):
@@ -109,27 +102,15 @@ async def ask_doc(query: QAQuery):
     question = query.question
 
     if doc_name not in RAG_CHAINS:
-        raise HTTPException(
-            status_code=404,
-            detail=f"Document '{doc_name}' not found or not processed."
-        )
+        raise HTTPException(status_code=404, detail=f"Document '{doc_name}' not found or not processed.")
 
     try:
         retriever = RAG_CHAINS[doc_name]
 
-        # Call synchronous retriever in threadpool
-        relevant_documents: List[Document] = await run_in_threadpool(
-            retriever.get_relevant_documents,
-            question
-        )
+        relevant_documents: List[Document] = await run_in_threadpool(retriever.get_relevant_documents, question)
 
-        context_text = "\n\n---\n\n".join(
-            [doc.page_content for doc in relevant_documents]
-        )
-        sources = sorted(
-            list(set([doc.metadata.get('source', 'N/A')
-                      for doc in relevant_documents]))
-        )
+        context_text = "\n\n---\n\n".join([doc.page_content for doc in relevant_documents])
+        sources = sorted(list(set([doc.metadata.get('source', 'N/A') for doc in relevant_documents])))
 
         return {
             "answer": f"Retrieved Context (Top {len(relevant_documents)} Chunks):\n\n{context_text}",
@@ -140,8 +121,7 @@ async def ask_doc(query: QAQuery):
     except Exception as e:
         print(f"Error during retrieval: {e}")
         raise HTTPException(status_code=500, detail=f"Retrieval failed: {e}")
-
-
+    
 @app.get("/health")
 def health():
     return {"status": "ok"}
