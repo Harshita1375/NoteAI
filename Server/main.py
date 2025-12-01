@@ -12,15 +12,12 @@ from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_core.documents import Document
 
-# --- Configuration (Removed API Key Dependency) ---
-RAG_CHAINS: Dict[str, Any] = {} # Stores retriever objects
+RAG_CHAINS: Dict[str, Any] = {}
 
-# Initialize the free, local embedding model
-# NOTE: This model will be downloaded once and run locally (no cost, no quota)
+
 model_name = "sentence-transformers/all-MiniLM-L6-v2"
 EMBEDDINGS = HuggingFaceEmbeddings(model_name=model_name)
 
-# --- FastAPI App Setup ---
 app = FastAPI()
 
 app.add_middleware(
@@ -31,7 +28,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Pydantic model for the Q&A request body
 class QAQuery(BaseModel):
     document_name: str
     question: str
@@ -64,33 +60,25 @@ async def process_docs(file: UploadFile = File(...)):
     file_path = f"temp_{file.filename}"
     
     try:
-        # 1. File Saving
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
         
-        # 2. Document Loading
         loader = get_document_loader(file_path)
         documents: List[Document] = loader.load()
 
-        # 3. Splitting
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
         texts = text_splitter.split_documents(documents)
 
     except Exception as e:
-        # Catch and handle errors during file operations/loading
         raise HTTPException(status_code=500, detail=f"Document processing failed: {e}")
     finally:
-        # 4. Cleanup (Always runs, even if an exception occurred)
         if os.path.exists(file_path):
              os.remove(file_path)
 
-    # 5. Vector Store & Retriever Creation (The Core Semantic Search Index)
     vectorstore = Chroma.from_documents(texts, EMBEDDINGS)
-    # The retriever is configured to fetch the top 4 most relevant chunks (k=4)
     retriever = vectorstore.as_retriever(search_kwargs={"k": 4})
     
     doc_name = file.filename
-    # Store the retriever object in the global dictionary
     RAG_CHAINS[doc_name] = retriever
     
     return {"message": f"Successfully processed and indexed document: {doc_name}", "document_name": doc_name}
@@ -122,6 +110,3 @@ async def ask_doc(query: QAQuery):
         print(f"Error during retrieval: {e}")
         raise HTTPException(status_code=500, detail=f"Retrieval failed: {e}")
 
-if __name__ == "__main__":
-    # Ensure you have 'pip install uvicorn' and 'pip install sentence-transformers'
-    uvicorn.run(app, host="0.0.0.0", port=8000)
