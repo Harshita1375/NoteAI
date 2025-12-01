@@ -77,58 +77,56 @@ Note AI/
 Follow these steps to run the project locally.
 
 1. Clone the repository
-Bash
 
 git clone [https://github.com/your-username/note-ai.git](https://github.com/your-username/note-ai.git)
 cd note-ai
-🧠 Backend Setup (FastAPI)
+
+# 🧠 Backend Setup (FastAPI)
 Navigate to the server directory and set up the Python environment.
 
-Bash
-
-# 1. Navigate to Server
+## 1. Navigate to Server
 cd Server
 
-# 2. Create virtual environment
+## 2. Create virtual environment
 python -m venv venv
 
-# 3. Activate virtual environment
-# Mac/Linux:
+## 3. Activate virtual environment
+### Mac/Linux:
 source venv/bin/activate
-# Windows:
+### Windows:
 venv\Scripts\activate
 
-# 4. Install dependencies
+## 4. Install dependencies
 pip install -r requirements.txt
 
-# 5. Setup Environment Variables
-# Create a .env file in the Server directory and add your keys (if required by specific models)
-# HUGGINGFACEhub_API_TOKEN=your_token_here
+## 5. Setup Environment Variables
+ Create a .env file in the Server directory and add your keys (if required by specific models)
 
-# 6. Run the server
+ HUGGINGFACEhub_API_TOKEN=your_token_here
+
+## 6. Run the server
 uvicorn main:app --reload --host 0.0.0.0 --port 8000
 The Backend will be running at: http://localhost:8000
 
-💻 Frontend Setup (React)
+# 💻 Frontend Setup (React)
 Open a new terminal, navigate to the client directory, and start the UI.
 
-Bash
 
-# 1. Navigate to Client
+## 1. Navigate to Client
 cd ../Client
 
-# 2. Install dependencies
+## 2. Install dependencies
 npm install
 
-# 3. Configure Environment
-# Create a .env file in the Client directory:
+## 3. Configure Environment
+ Create a .env file in the Client directory:
 echo "VITE_RENDER_API_URL=http://localhost:8000" > .env
 
-# 4. Run the app
+## 4. Run the app
 npm run dev
 The Frontend will be running at: http://localhost:5173
 
-🧪 Usage Workflow
+# 🧪 Usage Workflow
 Start the Backend: Ensure the FastAPI server is running.
 
 Start the Frontend: Ensure the React app is running.
@@ -141,10 +139,10 @@ Ask Questions: Type your query in the chat input.
 
 Get Answers: The AI will retrieve relevant context and generate an answer with sources displayed below.
 
-🤝 Contributing
+# 🤝 Contributing
 Contributions are welcome! Please fork the repository and create a pull request.
 
-📄 License
+# 📄 License
 MIT License
 
 
@@ -152,5 +150,3 @@ MIT License
 1.  Create a file named `README.md` in the root of your project folder.
 2.  Paste the code above into that file.
 3.  **Important:** Check the path to your screenshots. In the code above, I assumed your screenshots are located at `Client/src/assets/screenshots/SS1.png`. If they are in a different folder (like a root `screenshots` folder), simply update the path in the `## 📸 Screenshots` section.
-
-Would you like me to help generate a `requirements.txt` file based on the libraries mentioned as well?
