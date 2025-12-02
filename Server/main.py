@@ -98,11 +98,14 @@ async def process_docs(file: UploadFile = File(...)):
         loader = get_document_loader(file_path)
         documents: List[Document] = loader.load()
 
+        for doc in documents:
+            doc.metadata["source"] = file.filename
+
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
         texts = text_splitter.split_documents(documents)
 
-        vectorstore = Chroma.from_documents(texts, EMBEDDINGS)
-        retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
+        vectorstore = Chroma.from_documents(texts, EMBEDDINGS, collection_name=file.filename.replace(" ", "_"))
+        retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
 
         doc_name = file.filename
         RAG_CHAINS[doc_name] = retriever
@@ -114,6 +117,7 @@ async def process_docs(file: UploadFile = File(...)):
     finally:
         if os.path.exists(file_path):
             os.remove(file_path)
+
 
 @app.post("/ask-doc")
 async def ask_doc(query: QAQuery):
