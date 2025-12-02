@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import axios from 'axios';
+import './FileUpload.css';
 
 const API_BASE = import.meta.env.VITE_RENDER_API_URL;
 

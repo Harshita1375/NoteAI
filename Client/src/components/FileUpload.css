@@ -1,0 +1,32 @@
+/* Make upload section responsive */
+.file-upload-card .action-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;          /* ⬅ KEY FIX */
+}
+
+/* File input resizing */
+.file-upload-card input[type="file"] {
+  flex: 1;                  /* input grows on larger screens */
+  min-width: 180px;         /* prevent too small input */
+}
+
+/* Button stays next to input on desktop, falls below on mobile */
+.file-upload-card button {
+  white-space: nowrap;      /* Prevents text from breaking */
+  flex-shrink: 0;           /* Prevents button from shrinking */
+}
+
+/* Mobile screens */
+@media (max-width: 600px) {
+  .file-upload-card .action-group {
+    flex-direction: column;  /* Stack vertically */
+    align-items: flex-start;
+  }
+
+  .file-upload-card input[type="file"],
+  .file-upload-card button {
+    width: 100%;             /* Full width on mobile */
+  }
+}
