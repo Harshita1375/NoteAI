@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { jsPDF } from "jspdf"; 
 import ChatHistoryDisplay from './ChatHistoryDisplay.jsx'; 
@@ -13,6 +13,11 @@ function QnA({ documentName }) {
     const [chatHistory, setChatHistory] = useState([]); 
     const [sources, setSources] = useState([]); 
     const [isAsking, setIsAsking] = useState(false);
+    useEffect(() => {
+        setChatHistory([]);
+        setSources([]);
+        setQuestion('');
+    }, [documentName]);
 
     const handleDownloadPDF = () => {
         if (chatHistory.length === 0) {
@@ -61,7 +66,6 @@ function QnA({ documentName }) {
 
     const handleAsk = async () => {
         const trimmedQuestion = question.trim();
-        
         if (!documentName || !trimmedQuestion) return;
 
         const newUserMessage = { type: 'human', content: trimmedQuestion };
@@ -77,27 +81,27 @@ function QnA({ documentName }) {
 
         try {
             const response = await axios.post(`${API_BASE}/ask-doc`, {
-                document_name: documentName,
-                question: trimmedQuestion,
-                chat_history: historyToSend, 
+                document_name: documentName,   // ⭐ ALWAYS latest uploaded doc
+                question: trimmedQuestion
             });
 
             const aiAnswer = response.data.answer;
 
             setChatHistory(h => {
-                const updatedHistory = h.slice(0, -1);
-                return [...updatedHistory, { type: 'ai', content: aiAnswer }];
+                const updated = h.slice(0, -1);
+                return [...updated, { type: 'ai', content: aiAnswer }];
             });
+
             setSources(response.data.sources || []);
 
         } catch (error) {
-            console.error("Q&A error:", error);
             const errorMessage = `Error: Failed to get an answer. ${error.response?.data?.detail || error.message}`;
             
             setChatHistory(h => {
-                const updatedHistory = h.slice(0, -1);
-                return [...updatedHistory, { type: 'ai', content: errorMessage, error: true }];
+                const updated = h.slice(0, -1);
+                return [...updated, { type: 'ai', content: errorMessage, error: true }];
             });
+
             setSources([]);
         } finally {
             setIsAsking(false);
@@ -106,10 +110,10 @@ function QnA({ documentName }) {
 
     return (
         <div className="card qna-card">
-            {/* Header Flex Container for Title + Download Button */}
+            {/* Header Flex Container */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                 <h2 style={{ margin: 0 }}>💬 Ask a Question</h2>
-                
+
                 <button 
                     onClick={handleDownloadPDF} 
                     disabled={chatHistory.length === 0}
@@ -117,7 +121,7 @@ function QnA({ documentName }) {
                     style={{
                         background: 'none',
                         border: 'none',
-                        color: chatHistory.length === 0 ? '#ccc' : '#fff', // Gray if empty, White if active
+                        color: chatHistory.length === 0 ? '#ccc' : '#fff',
                         cursor: chatHistory.length === 0 ? 'not-allowed' : 'pointer',
                         fontSize: '1.2rem',
                         padding: '5px'
